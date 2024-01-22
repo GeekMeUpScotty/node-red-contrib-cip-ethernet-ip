@@ -267,20 +267,21 @@ module.exports = function (RED) {
 
             fs.readFile(filename, 'utf8', function (err, data) {
                 if (err) {
+                    plc_unit = "";
                     return node.error(RED._("ethip.error.readerrorunitfile"));
                 }
                 plc_unit = data.replace(/\n$/, '').trim();
 
-                if (plc_unit === "" || !Tag.isValidTagname(plc_unit)) {
-                    // Should probably use a more suitable name check.
-                    // Just want to avoid SQL injection, which is (coincidentally) covered by above check
-                    return node.error(RED._("ethip.error.badunitname __name__", { name: plc_unit }));
+                const validNameRegex = /^[A-Za-z_][A-Za-z0-9_-]*$/;
+                if (plc_unit === "" || !validNameRegex.test(plc_unit)) {
+                    const plc_unit_cp = plc_unit;
+                    plc_unit = "";
+                    return node.error(RED._("ethip.error.badunitname", { unitname: plc_unit_cp }));
                 }
+                node.warn("PLC Unit is: " + plc_unit);
             });
-		
         }
 
-        node.warn("PLC Unit is: " + plc_unit + "'");
         const tagName = config.program ? `Program:${config.program}.${config.variable}` : config.variable;
 
         function collateTag(tag) {
@@ -315,7 +316,11 @@ module.exports = function (RED) {
                 msg.lastValue = lastValue;
             }
             if (config.readUnitFile) {
-                msg.unit = plc_unit;
+                if (plc_unit !== "") {
+                    msg.unit = plc_unit;
+                } else {
+                    return;
+                }
             }
  
             node.send(msg);

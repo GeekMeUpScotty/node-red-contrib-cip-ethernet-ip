@@ -78,7 +78,7 @@
             "onerror": "Error communicating with the PLC: ",
             "missingconfig": "Missing configuration",
             "readerrorunitfile": "Read error on unit name file",
-            "badunitname": "Illegal unit name provided",
+            "badunitname": "Illegal unit name [__unitname__] provided",
             "noresponse": "No response from PLC, restarting communication",
             "invalidvar": "Variable [__varname__] not found"
         },
